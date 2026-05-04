@@ -6,7 +6,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const StarRating = ({ label, rating, onChange }) => {
     return (
-        <div className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center py-3 border-b border-gray-100 last:border-0 gap-2 sm:gap-0">
             <span className="text-sm font-semibold text-gray-700">{label}</span>
             <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -17,7 +17,7 @@ const StarRating = ({ label, rating, onChange }) => {
                         className="transition-transform duration-200 hover:scale-110 focus:outline-none"
                     >
                         <svg
-                            className={`w-7 h-7 ${rating >= star ? 'text-amber-400' : 'text-gray-200'}`}
+                            className={`w-6 h-6 sm:w-7 sm:h-7 ${rating >= star ? 'text-amber-400' : 'text-gray-200'}`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                         >
