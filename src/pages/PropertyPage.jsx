@@ -187,8 +187,8 @@ function PropertyPage() {
                                 key={city}
                                 onClick={() => setSelectedCity(city)}
                                 className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedCity === city
-                                        ? 'bg-indigo-600 text-white shadow-md'
-                                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-indigo-600'
+                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-indigo-600'
                                     }`}
                             >
                                 {city}
@@ -236,6 +236,15 @@ function PropertyPage() {
                                             ))}
                                         </div>
                                         <span className="text-sm text-gray-500 font-medium">Based on {filteredReviews.length} reviews</span>
+                                        {filteredReviews.length >= 10 ? (
+                                            <span className="mt-1.5 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 w-max">Highly Trusted</span>
+                                        ) : filteredReviews.length >= 5 ? (
+                                            <span className="mt-1.5 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 w-max">Credible</span>
+                                        ) : filteredReviews.length >= 2 ? (
+                                            <span className="mt-1.5 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 w-max">Growing</span>
+                                        ) : filteredReviews.length === 1 ? (
+                                            <span className="mt-1.5 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 w-max">New</span>
+                                        ) : null}
                                     </div>
                                 </div>
 
