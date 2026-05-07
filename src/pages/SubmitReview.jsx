@@ -59,7 +59,9 @@ function SubmitReview() {
             Value: 0,
         },
         reviewText: '',
-        verifiedTenant: false,
+        moveInDate: '',
+        moveOutDate: '',
+        stillLiveHere: false,
     });
 
     const handleChange = (e) => {
@@ -90,6 +92,9 @@ function SubmitReview() {
                 address: formData.propertyAddress,
                 landlordName: formData.landlordName,
                 city: formData.city,
+                moveInDate: formData.moveInDate,
+                moveOutDate: formData.stillLiveHere ? null : formData.moveOutDate,
+                stillLiveHere: formData.stillLiveHere,
                 ratings: {
                     Responsiveness: formData.ratings.Responsiveness,
                     Condition: formData.ratings.Condition,
@@ -97,7 +102,7 @@ function SubmitReview() {
                     Value: formData.ratings.Value,
                 },
                 reviewText: formData.reviewText,
-                verified: formData.verifiedTenant,
+                verified: formData.moveInDate ? true : false,
                 createdAt: serverTimestamp(),
                 uid: user.uid,
                 email: user.email,
@@ -224,6 +229,44 @@ function SubmitReview() {
                                         />
                                     </div>
                                 </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Move-in Date</label>
+                                        <input
+                                            type="date"
+                                            name="moveInDate"
+                                            value={formData.moveInDate}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50 focus:bg-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-sm font-semibold text-gray-700">Move-out Date</label>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id="stillLiveHere"
+                                                    name="stillLiveHere"
+                                                    checked={formData.stillLiveHere}
+                                                    onChange={handleChange}
+                                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                                                />
+                                                <label htmlFor="stillLiveHere" className="text-sm text-gray-600 cursor-pointer">I still live here</label>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="date"
+                                            name="moveOutDate"
+                                            value={formData.stillLiveHere ? '' : formData.moveOutDate}
+                                            onChange={handleChange}
+                                            disabled={formData.stillLiveHere}
+                                            required={!formData.stillLiveHere}
+                                            className={`w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none ${formData.stillLiveHere ? 'bg-gray-100 cursor-not-allowed text-gray-400' : 'bg-gray-50 focus:bg-white'}`}
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Ratings */}
@@ -249,22 +292,6 @@ function SubmitReview() {
                                     placeholder="Write your review here..."
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50 focus:bg-white resize-none"
                                 />
-                            </div>
-
-                            {/* Verification */}
-                            <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100 flex items-start gap-3">
-                                <input
-                                    id="verifiedTenant"
-                                    name="verifiedTenant"
-                                    type="checkbox"
-                                    checked={formData.verifiedTenant}
-                                    onChange={handleChange}
-                                    className="w-5 h-5 mt-1 text-indigo-600 border-gray-300 rounded cursor-pointer"
-                                />
-                                <div>
-                                    <label htmlFor="verifiedTenant" className="font-semibold text-gray-800 cursor-pointer">I lived here</label>
-                                    <p className="text-sm text-gray-600 mt-0.5">Check this to get a <span className="font-medium text-indigo-600">Verified Tenant Badge</span>.</p>
-                                </div>
                             </div>
 
                             {/* Submit Button */}

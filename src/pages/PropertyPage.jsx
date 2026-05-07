@@ -11,6 +11,7 @@ function PropertyPage() {
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('newest');
     const [shareCopied, setShareCopied] = useState(false);
+    const [selectedCity, setSelectedCity] = useState('All');
 
     useEffect(() => {
         const fetchReviews = async () => {
@@ -34,6 +35,7 @@ function PropertyPage() {
                 });
 
                 setReviews(fetchedReviews);
+                setSelectedCity('All');
             } catch (error) {
                 console.error("Error fetching reviews:", error);
             } finally {
@@ -53,14 +55,24 @@ function PropertyPage() {
         return (r + c + d + v) / 4;
     };
 
-    const overallAverage = useMemo(() => {
-        if (reviews.length === 0) return 0;
-        const total = reviews.reduce((acc, review) => acc + getReviewAverage(review), 0);
-        return (total / reviews.length).toFixed(1);
+    const uniqueCities = useMemo(() => {
+        const cities = reviews.map(r => r.city).filter(Boolean);
+        return ['All', ...new Set(cities)];
     }, [reviews]);
 
+    const filteredReviews = useMemo(() => {
+        if (selectedCity === 'All') return reviews;
+        return reviews.filter(r => r.city === selectedCity);
+    }, [reviews, selectedCity]);
+
+    const overallAverage = useMemo(() => {
+        if (filteredReviews.length === 0) return 0;
+        const total = filteredReviews.reduce((acc, review) => acc + getReviewAverage(review), 0);
+        return (total / filteredReviews.length).toFixed(1);
+    }, [filteredReviews]);
+
     const sortedReviews = useMemo(() => {
-        const sorted = [...reviews];
+        const sorted = [...filteredReviews];
         if (sortBy === 'newest') {
             sorted.sort((a, b) => {
                 const dateA = a.createdAt?.seconds || 0;
@@ -73,7 +85,7 @@ function PropertyPage() {
             sorted.sort((a, b) => getReviewAverage(a) - getReviewAverage(b));
         }
         return sorted;
-    }, [reviews, sortBy]);
+    }, [filteredReviews, sortBy]);
 
     const handleShare = () => {
         navigator.clipboard.writeText(window.location.href);
@@ -142,7 +154,7 @@ function PropertyPage() {
                                 Results for "{searchQuery}"
                             </h1>
                             <p className="text-gray-500 mt-2 font-medium">
-                                {loading ? 'Searching...' : `${reviews.length} reviews found`}
+                                {loading ? 'Searching...' : `${filteredReviews.length} reviews found`}
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -168,11 +180,46 @@ function PropertyPage() {
                     </div>
                 </div>
 
+                {!loading && uniqueCities.length > 1 && (
+                    <div className="flex flex-wrap gap-2 mb-8">
+                        {uniqueCities.map((city) => (
+                            <button
+                                key={city}
+                                onClick={() => setSelectedCity(city)}
+                                className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedCity === city
+                                        ? 'bg-indigo-600 text-white shadow-md'
+                                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-indigo-600'
+                                    }`}
+                            >
+                                {city}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {!loading && filteredReviews.length > 0 && parseFloat(overallAverage) < 3.0 && (
+                    <div className="bg-red-600 text-white px-6 py-5 rounded-2xl shadow-xl mb-8 flex items-start sm:items-center gap-4 border border-red-700">
+                        <div className="bg-red-700 p-2 rounded-full shrink-0">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="font-extrabold text-lg sm:text-xl tracking-tight">
+                                ⚠️ WARNING — This property has been flagged by {filteredReviews.length} {filteredReviews.length === 1 ? 'tenant' : 'tenants'} for poor conditions.
+                            </p>
+                            <p className="text-red-100 font-medium text-base mt-1">
+                                Read reviews carefully before signing any lease.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="flex justify-center items-center py-20">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
                     </div>
-                ) : reviews.length > 0 ? (
+                ) : filteredReviews.length > 0 ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Sidebar with Overall Score */}
                         <div className="lg:col-span-1">
@@ -188,7 +235,7 @@ function PropertyPage() {
                                                 </svg>
                                             ))}
                                         </div>
-                                        <span className="text-sm text-gray-500 font-medium">Based on {reviews.length} reviews</span>
+                                        <span className="text-sm text-gray-500 font-medium">Based on {filteredReviews.length} reviews</span>
                                     </div>
                                 </div>
 
@@ -204,7 +251,7 @@ function PropertyPage() {
 
                                 <div className="space-y-4 pt-4 border-t border-gray-100">
                                     {['Responsiveness', 'Condition', 'Deposit', 'Value'].map((category) => {
-                                        const catAvg = (reviews.reduce((acc, rev) => acc + (Number(rev.ratings?.[category]) || 0), 0) / reviews.length).toFixed(1);
+                                        const catAvg = (filteredReviews.reduce((acc, rev) => acc + (Number(rev.ratings?.[category]) || 0), 0) / filteredReviews.length).toFixed(1);
                                         return (
                                             <div key={category} className="flex items-center justify-between">
                                                 <span className="text-sm font-medium text-gray-700">{category}</span>
