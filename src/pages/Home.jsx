@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
@@ -6,10 +6,14 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 function Home() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [allLocations, setAllLocations] = useState([]);
     const [recentReviews, setRecentReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const searchRef = useRef(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -37,6 +41,52 @@ function Home() {
 
         fetchRecentReviews();
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        const fetchAllLocations = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'reviews'));
+                const locations = new Set();
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.city) locations.add(data.city);
+                    if (data.address) locations.add(data.address);
+                });
+                setAllLocations(Array.from(locations));
+            } catch (error) {
+                console.error("Error fetching locations:", error);
+            }
+        };
+        fetchAllLocations();
+    }, []);
+
+    useEffect(() => {
+        if (searchQuery.trim().length === 0) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+        const q = searchQuery.toLowerCase();
+        const matches = allLocations.filter(loc => loc.toLowerCase().includes(q)).slice(0, 5);
+        setSuggestions(matches);
+        setShowSuggestions(matches.length > 0);
+    }, [searchQuery, allLocations]);
+
+    const handleSuggestionClick = (suggestion) => {
+        setSearchQuery(suggestion);
+        setShowSuggestions(false);
+        navigate(`/property?search=${encodeURIComponent(suggestion)}`);
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -118,7 +168,7 @@ function Home() {
                     </p>
 
                     <form onSubmit={handleSearch} className="max-w-lg mx-auto flex flex-col sm:flex-row gap-3 shadow-xl shadow-indigo-100/50 p-2 bg-white rounded-2xl border border-gray-100">
-                        <div className="relative flex-grow">
+                        <div className="relative flex-grow" ref={searchRef}>
                             <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                                 <svg className="h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -130,7 +180,28 @@ function Home() {
                                 placeholder="Enter city or property address..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                                autoComplete="off"
                             />
+
+                            {/* Suggestions Dropdown */}
+                            {showSuggestions && suggestions.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden z-50">
+                                    <ul className="py-2 m-0 text-left">
+                                        {suggestions.map((suggestion, index) => (
+                                            <li key={index} className="border-b border-gray-50 last:border-0">
+                                                <button
+                                                    type="button"
+                                                    className="w-full text-left px-5 py-3 hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 transition-colors font-medium focus:bg-indigo-50 focus:outline-none"
+                                                    onClick={() => handleSuggestionClick(suggestion)}
+                                                >
+                                                    {suggestion}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                         <button
                             type="submit"
