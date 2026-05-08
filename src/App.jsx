@@ -4,6 +4,7 @@ import PropertyPage from './pages/PropertyPage'
 import SubmitReview from './pages/SubmitReview'
 import Login from './pages/Login'
 import SeedData from './pages/SeedData'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/submit" element={<SubmitReview />} />
         <Route path="/login" element={<Login />} />
         <Route path="/seed" element={<SeedData />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   )
