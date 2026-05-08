@@ -248,6 +248,10 @@ function PropertyPage() {
                                     </div>
                                 </div>
 
+                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6 text-xs text-yellow-800 leading-relaxed">
+                                    ⚠️ Reviews are submitted anonymously by tenants. SubmitSafe does not verify individual claims. Use reviews as a guide, not as absolute truth.
+                                </div>
+
                                 {parseFloat(overallAverage) < 2.5 && (
                                     <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl border border-red-200 flex items-center gap-3 mb-6">
                                         <span className="text-2xl">⚠️</span>
