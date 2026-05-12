@@ -312,7 +312,7 @@ function Home() {
                             <span className="font-bold text-xl tracking-tight text-gray-900">SubmitSafe</span>
                         </div>
                         <div className="flex items-center flex-col sm:flex-row gap-4 sm:gap-8">
-                            <span className="text-gray-500 text-sm text-center sm:text-left">© 2025 SubmitSafe. All rights reserved.</span>
+                            <span className="text-gray-500 text-sm text-center sm:text-left">© 2026 SubmitSafe. All rights reserved.</span>
                             <Link to="/submit" className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
                                 Submit a Review
                             </Link>
